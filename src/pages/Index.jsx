@@ -1,9 +1,12 @@
-import { Container, Box, Text, VStack, Heading, Flex, Spacer, HStack } from "@chakra-ui/react";
+import { Container, Box, Text, VStack, Heading, Flex, Spacer, HStack, Button } from "@chakra-ui/react";
 import { FaCalendarAlt, FaMapMarkerAlt, FaClock } from "react-icons/fa";
 import { useEffect, useState } from "react";
 import { useEvents } from "../integrations/supabase/index.js";
 
+import { useSupabaseAuth, SupabaseAuthUI } from "../integrations/supabase/auth.jsx";
+
 const Index = () => {
+  const { session, logout } = useSupabaseAuth();
   const [events, setEvents] = useState([]);
   const { data, error, isLoading } = useEvents();
 
@@ -12,6 +15,17 @@ const Index = () => {
       setEvents(data);
     }
   }, [data]);
+
+  if (!session) {
+    return (
+      <Container maxW="container.lg" p={4}>
+        <Box as="nav" bg="blue.500" color="white" p={4} mb={6}>
+          <Heading size="lg">Event Listing</Heading>
+        </Box>
+        <SupabaseAuthUI />
+      </Container>
+    );
+  }
 
   if (isLoading) {
     return <Text>Loading...</Text>;
@@ -24,7 +38,11 @@ const Index = () => {
   return (
     <Container maxW="container.lg" p={4}>
       <Box as="nav" bg="blue.500" color="white" p={4} mb={6}>
-        <Heading size="lg">Event Listing</Heading>
+        <Flex align="center">
+          <Heading size="lg">Event Listing</Heading>
+          <Spacer />
+          <Button colorScheme="red" onClick={logout}>Logout</Button>
+        </Flex>
       </Box>
       <VStack spacing={8}>
         {events.map((event) => (
